@@ -17,6 +17,14 @@ export const heartScoreController = {
     }
   },
 
-  // TODO(candidate): implement `create` (POST /calculations) and
-  // `list`     (GET  /calculations).
+  async create(req: Request, res: Response, next: NextFunction) {
+    try {
+      const calculation = await heartScoreService.createCalculation(req.body);
+      res.status(201).json(calculation);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  // TODO(candidate): implement `list` (GET /calculations).
 };

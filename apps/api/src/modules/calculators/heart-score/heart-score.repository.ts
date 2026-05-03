@@ -3,26 +3,53 @@ import type {
   HeartScoreResult,
   PersistedHeartScoreCalculation,
 } from '@mdcalc/shared';
+import { heartScoreInputSchema } from '@mdcalc/shared';
 
 import { pool } from '../../../db/client.js';
 
-/**
- * Data-access layer for `heart_score_calculations`. The service should be
- * the only caller — keep SQL and row-to-DTO mapping inside this file.
- *
- * TODO(candidate): implement `insert` and `listRecent` against the table
- * created in `src/db/migrations/002_heart_score_calculations.sql`.
- */
+interface HeartScoreCalculationRow {
+  id: string;
+  inputs: unknown;
+  score: number;
+  band: HeartScoreResult['band'];
+  interpretation: string;
+  created_at: string | Date;
+}
+
+function mapRow(row: HeartScoreCalculationRow): PersistedHeartScoreCalculation {
+  return {
+    id: row.id,
+    inputs: heartScoreInputSchema.parse(row.inputs),
+    score: row.score,
+    band: row.band,
+    interpretation: row.interpretation,
+    createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+  };
+}
+
 export const heartScoreRepository = {
-  async insert(_input: HeartScoreInput, _result: HeartScoreResult): Promise<PersistedHeartScoreCalculation> {
-    throw new Error('not implemented');
+  async insert(
+    input: HeartScoreInput,
+    result: HeartScoreResult,
+  ): Promise<PersistedHeartScoreCalculation> {
+    const { rows } = await pool.query<HeartScoreCalculationRow>(
+      `
+        INSERT INTO heart_score_calculations (inputs, score, band, interpretation)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id, inputs, score, band, interpretation, created_at
+      `,
+      [input, result.score, result.band, result.interpretation],
+    );
+
+    const [row] = rows;
+    if (!row) {
+      throw new Error('Insert did not return a HEART Score calculation');
+    }
+
+    return mapRow(row);
   },
 
   async listRecent(_limit: number): Promise<PersistedHeartScoreCalculation[]> {
     throw new Error('not implemented');
   },
 };
-
-// Placeholder so editors don't flag `pool` as unused while the repository
-// is stubbed. Safe to remove once the queries above are implemented.
-void pool;
