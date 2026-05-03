@@ -8,27 +8,24 @@ import { apiFetch } from './client';
 
 const BASE = '/api/v1/calculators/heart-score';
 
-/**
- * TODO(candidate): implement these three helpers against the endpoints you
- * build in the API. They are the only functions the UI should use to talk
- * to the API for this feature.
- */
-export async function calculateHeartScoreRemote(_input: HeartScoreInput): Promise<HeartScoreResult> {
-  throw new Error('not implemented');
+export async function calculateHeartScoreRemote(input: HeartScoreInput): Promise<HeartScoreResult> {
+  return apiFetch<HeartScoreResult>(`${BASE}/calculate`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
 }
 
 export async function createHeartScoreCalculation(
-  _input: HeartScoreInput,
+  input: HeartScoreInput,
 ): Promise<PersistedHeartScoreCalculation> {
-  throw new Error('not implemented');
+  return apiFetch<PersistedHeartScoreCalculation>(`${BASE}/calculations`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
 }
 
 export async function listHeartScoreCalculations(
-  _limit = 20,
+  limit = 20,
 ): Promise<PersistedHeartScoreCalculation[]> {
-  throw new Error('not implemented');
+  return apiFetch<PersistedHeartScoreCalculation[]>(`${BASE}/calculations?limit=${limit}`);
 }
-
-// Keep the import referenced until the candidate wires it up.
-void BASE;
-void apiFetch;

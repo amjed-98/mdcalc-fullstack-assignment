@@ -27,6 +27,7 @@ async function run() {
   const applied = await appliedMigrations();
   const files = (await readdir(MIGRATIONS_DIR))
     .filter((name) => name.endsWith('.sql'))
+    .filter((name) => !name.endsWith('.down.sql'))
     .sort();
 
   for (const file of files) {
