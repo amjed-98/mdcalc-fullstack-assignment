@@ -2,7 +2,7 @@
 
 ## Overview
 
-```
+```text
 [ Browser ]
      │
      ▼
@@ -41,7 +41,7 @@ score, risk band, interpretation, and echoed inputs. The web app imports that
 same calculator for the live preview, while the API imports the same schema and
 calculator so browser-provided results are never trusted.
 
-```
+```text
 [ HeartScoreCalculator client component ]
        |
        |-- live preview via @mdcalc/shared/calculateHeartScore

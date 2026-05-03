@@ -4,6 +4,17 @@ import { calculateHeartScore } from './calculate';
 import { heartScoreInputSchema, type HeartScoreInput } from '../../schemas/heart-score';
 
 describe('calculateHeartScore', () => {
+  it('returns the low-risk band for the minimum score', () => {
+    const inputs: HeartScoreInput = { history: 0, ecg: 0, age: 0, riskFactors: 0, troponin: 0 };
+
+    expect(calculateHeartScore(inputs)).toEqual({
+      score: 0,
+      band: 'low',
+      interpretation: '0.9-1.7% 6-week MACE risk. Consider discharge.',
+      inputs,
+    });
+  });
+
   it('returns the low-risk band through score 3', () => {
     const inputs: HeartScoreInput = { history: 1, ecg: 0, age: 1, riskFactors: 1, troponin: 0 };
 
@@ -39,6 +50,17 @@ describe('calculateHeartScore', () => {
       score: 7,
       band: 'high',
       interpretation: '50-65% 6-week MACE risk. Early invasive strategy.',
+    });
+  });
+
+  it('returns the high-risk band for the maximum score', () => {
+    const inputs: HeartScoreInput = { history: 2, ecg: 2, age: 2, riskFactors: 2, troponin: 2 };
+
+    expect(calculateHeartScore(inputs)).toEqual({
+      score: 10,
+      band: 'high',
+      interpretation: '50-65% 6-week MACE risk. Early invasive strategy.',
+      inputs,
     });
   });
 });

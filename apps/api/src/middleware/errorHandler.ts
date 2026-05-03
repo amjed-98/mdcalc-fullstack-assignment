@@ -3,8 +3,19 @@ import { ZodError } from 'zod';
 
 import { HttpError } from '../utils/httpError.js';
 
+function isZodError(err: unknown): err is ZodError {
+  return (
+    err instanceof ZodError ||
+    (typeof err === 'object' &&
+      err !== null &&
+      'issues' in err &&
+      'flatten' in err &&
+      typeof err.flatten === 'function')
+  );
+}
+
 export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
-  if (err instanceof ZodError) {
+  if (isZodError(err)) {
     res.status(400).json({
       error: {
         code: 'VALIDATION_ERROR',

@@ -14,7 +14,11 @@ describe('HeartScoreCalculator', () => {
     expect(html).toContain('Risk factors');
     expect(html).toContain('Troponin');
     expect(html).toContain('Score 0');
-    expect(html).toContain('low');
+    expect(
+      html
+        .match(/<strong[^>]*>Score 0<\/strong><span[^>]*>\s*([^<]+)\s*<\/span>/)?.[1]
+        ?.trim(),
+    ).toBe('low');
     expect(html).toContain('0.9-1.7% 6-week MACE risk');
   });
 });

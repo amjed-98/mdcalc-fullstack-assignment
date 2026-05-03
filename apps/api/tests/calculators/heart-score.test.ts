@@ -123,7 +123,7 @@ describe('POST /api/v1/calculators/heart-score/calculations', () => {
 
   it('returns the structured validation error without persisting invalid scored inputs', async () => {
     const app = createApp();
-    db.query.mockClear();
+    db.query.mockReset();
 
     const res = await request(app).post('/api/v1/calculators/heart-score/calculations').send({
       history: 2,
@@ -205,7 +205,7 @@ describe('GET /api/v1/calculators/heart-score/calculations', () => {
     'rejects invalid recent-calculation limit %s',
     async (limit) => {
       const app = createApp();
-      db.query.mockClear();
+      db.query.mockReset();
 
       const res = await request(app).get(
         `/api/v1/calculators/heart-score/calculations?limit=${limit}`,
