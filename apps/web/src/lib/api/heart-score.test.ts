@@ -1,6 +1,61 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createHeartScoreCalculation, listHeartScoreCalculations } from './heart-score';
+import {
+  calculateHeartScoreRemote,
+  createHeartScoreCalculation,
+  listHeartScoreCalculations,
+} from './heart-score';
+
+describe('calculateHeartScoreRemote', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('posts HEART Score inputs to the remote calculate endpoint', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({
+        inputs: {
+          history: 2,
+          ecg: 1,
+          age: 1,
+          riskFactors: 1,
+          troponin: 0,
+        },
+        score: 5,
+        band: 'moderate',
+        interpretation: '12-16.6% 6-week MACE risk. Admit for observation / further workup.',
+      }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await calculateHeartScoreRemote({
+      history: 2,
+      ecg: 1,
+      age: 1,
+      riskFactors: 1,
+      troponin: 0,
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'http://localhost:4000/api/v1/calculators/heart-score/calculate',
+      expect.objectContaining({
+        body: JSON.stringify({
+          history: 2,
+          ecg: 1,
+          age: 1,
+          riskFactors: 1,
+          troponin: 0,
+        }),
+        method: 'POST',
+      }),
+    );
+    expect(result).toMatchObject({
+      score: 5,
+      band: 'moderate',
+    });
+  });
+});
 
 describe('listHeartScoreCalculations', () => {
   afterEach(() => {

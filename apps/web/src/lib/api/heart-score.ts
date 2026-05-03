@@ -14,9 +14,12 @@ const BASE = '/api/v1/calculators/heart-score';
  * to the API for this feature.
  */
 export async function calculateHeartScoreRemote(
-  _input: HeartScoreInput,
+  input: HeartScoreInput,
 ): Promise<HeartScoreResult> {
-  throw new Error('not implemented');
+  return apiFetch<HeartScoreResult>(`${BASE}/calculate`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
 }
 
 export async function createHeartScoreCalculation(
