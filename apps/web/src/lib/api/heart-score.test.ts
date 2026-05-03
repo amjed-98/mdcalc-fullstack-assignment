@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { listHeartScoreCalculations } from './heart-score';
+import { createHeartScoreCalculation, listHeartScoreCalculations } from './heart-score';
 
 describe('listHeartScoreCalculations', () => {
   afterEach(() => {
@@ -43,6 +43,60 @@ describe('listHeartScoreCalculations', () => {
       score: 5,
       band: 'moderate',
       createdAt: '2026-05-03T10:00:00.000Z',
+    });
+  });
+});
+
+describe('createHeartScoreCalculation', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('posts HEART Score inputs and returns the persisted calculation', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({
+        id: '018f190f-0dc8-7487-b35d-123456789abc',
+        inputs: {
+          history: 2,
+          ecg: 1,
+          age: 1,
+          riskFactors: 1,
+          troponin: 0,
+        },
+        score: 5,
+        band: 'moderate',
+        interpretation: '12-16.6% 6-week MACE risk. Admit for observation / further workup.',
+        createdAt: '2026-05-03T10:00:00.000Z',
+      }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const calculation = await createHeartScoreCalculation({
+      history: 2,
+      ecg: 1,
+      age: 1,
+      riskFactors: 1,
+      troponin: 0,
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'http://localhost:4000/api/v1/calculators/heart-score/calculations',
+      expect.objectContaining({
+        body: JSON.stringify({
+          history: 2,
+          ecg: 1,
+          age: 1,
+          riskFactors: 1,
+          troponin: 0,
+        }),
+        method: 'POST',
+      }),
+    );
+    expect(calculation).toMatchObject({
+      id: '018f190f-0dc8-7487-b35d-123456789abc',
+      score: 5,
+      band: 'moderate',
     });
   });
 });

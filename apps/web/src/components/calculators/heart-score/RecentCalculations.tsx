@@ -1,11 +1,12 @@
 'use client';
 
+import React from 'react';
 import { useEffect, useState } from 'react';
 
 import type { PersistedHeartScoreCalculation } from '@mdcalc/shared';
 import { Card } from '@mdcalc/ui';
 
-import { listHeartScoreCalculations } from '@/lib/api/heart-score';
+import { listHeartScoreCalculations } from '../../../lib/api/heart-score';
 
 type LoadState =
   | { status: 'loading' }

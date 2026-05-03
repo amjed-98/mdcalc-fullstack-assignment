@@ -20,9 +20,12 @@ export async function calculateHeartScoreRemote(
 }
 
 export async function createHeartScoreCalculation(
-  _input: HeartScoreInput,
+  input: HeartScoreInput,
 ): Promise<PersistedHeartScoreCalculation> {
-  throw new Error('not implemented');
+  return apiFetch<PersistedHeartScoreCalculation>(`${BASE}/calculations`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
 }
 
 export async function listHeartScoreCalculations(
