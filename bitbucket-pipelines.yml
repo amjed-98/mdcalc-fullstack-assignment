@@ -1,0 +1,32 @@
+image: node:20
+
+definitions:
+  caches:
+    npmcache: ~/.npm
+
+pipelines:
+  default:
+    - parallel:
+        - step:
+            name: Lint & typecheck
+            caches: [npmcache]
+            script:
+              - npm ci
+              - npm run lint
+              - npm run typecheck
+        - step:
+            name: Test
+            caches: [npmcache]
+            services:
+              - postgres
+            script:
+              - npm ci
+              - npm run test
+
+definitions-services:
+  postgres:
+    image: postgres:15-alpine
+    variables:
+      POSTGRES_DB: mdcalc
+      POSTGRES_USER: mdcalc
+      POSTGRES_PASSWORD: mdcalc

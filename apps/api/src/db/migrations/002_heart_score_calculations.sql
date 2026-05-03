@@ -1,0 +1,10 @@
+-- TODO(candidate):
+-- Create the `heart_score_calculations` table that backs the persistence
+-- endpoints. At minimum you will want:
+--   id           UUID primary key, default gen_random_uuid()
+--   inputs       JSONB   (the five validated inputs)
+--   score        SMALLINT
+--   band         TEXT    (one of 'low' | 'moderate' | 'high')
+--   created_at   TIMESTAMPTZ, default NOW()
+--
+-- Add any indexes you think are worthwhile.
