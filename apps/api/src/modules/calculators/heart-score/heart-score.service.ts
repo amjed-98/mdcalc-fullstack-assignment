@@ -17,9 +17,8 @@ export const heartScoreService = {
     return heartScoreRepository.insert(input, result);
   },
 
-  async listRecentCalculations(_limit: number): Promise<PersistedHeartScoreCalculation[]> {
-    // TODO(candidate): delegate to `heartScoreRepository.listRecent(limit)`
-    throw new Error('not implemented');
+  async listRecentCalculations(limit: number): Promise<PersistedHeartScoreCalculation[]> {
+    return heartScoreRepository.listRecent(limit);
   },
 };
 

@@ -81,18 +81,16 @@ describe('POST /api/v1/calculators/heart-score/calculations', () => {
       ],
     });
 
-    const res = await request(app)
-      .post('/api/v1/calculators/heart-score/calculations')
-      .send({
-        history: 2,
-        ecg: 2,
-        age: 1,
-        riskFactors: 1,
-        troponin: 1,
-        score: 0,
-        band: 'low',
-        interpretation: 'client supplied result should be ignored',
-      });
+    const res = await request(app).post('/api/v1/calculators/heart-score/calculations').send({
+      history: 2,
+      ecg: 2,
+      age: 1,
+      riskFactors: 1,
+      troponin: 1,
+      score: 0,
+      band: 'low',
+      interpretation: 'client supplied result should be ignored',
+    });
 
     expect(res.status).toBe(201);
     expect(res.body).toEqual({
@@ -143,4 +141,82 @@ describe('POST /api/v1/calculators/heart-score/calculations', () => {
     expect(res.body.error.details.fieldErrors.age).toBeDefined();
     expect(db.query).not.toHaveBeenCalled();
   });
+});
+
+describe('GET /api/v1/calculators/heart-score/calculations', () => {
+  it('returns the 20 most recent saved HEART Score calculations by default', async () => {
+    const app = createApp();
+    db.query.mockResolvedValueOnce({
+      rows: [
+        {
+          id: '018f190f-0dc8-7487-b35d-123456789abc',
+          inputs: {
+            history: 2,
+            ecg: 1,
+            age: 1,
+            riskFactors: 1,
+            troponin: 0,
+          },
+          score: 5,
+          band: 'moderate',
+          interpretation: '12-16.6% 6-week MACE risk. Admit for observation / further workup.',
+          created_at: '2026-05-03T10:00:00.000Z',
+        },
+      ],
+    });
+
+    const res = await request(app).get('/api/v1/calculators/heart-score/calculations');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([
+      {
+        id: '018f190f-0dc8-7487-b35d-123456789abc',
+        inputs: {
+          history: 2,
+          ecg: 1,
+          age: 1,
+          riskFactors: 1,
+          troponin: 0,
+        },
+        score: 5,
+        band: 'moderate',
+        interpretation: '12-16.6% 6-week MACE risk. Admit for observation / further workup.',
+        createdAt: '2026-05-03T10:00:00.000Z',
+      },
+    ]);
+    expect(db.query).toHaveBeenCalledWith(
+      expect.stringContaining('ORDER BY created_at DESC'),
+      [20],
+    );
+  });
+
+  it('uses a valid explicit recent-calculation limit', async () => {
+    const app = createApp();
+    db.query.mockResolvedValueOnce({ rows: [] });
+
+    const res = await request(app).get('/api/v1/calculators/heart-score/calculations?limit=3');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([]);
+    expect(db.query).toHaveBeenCalledWith(expect.stringContaining('LIMIT $1'), [3]);
+  });
+
+  it.each(['0', '101', '2.5', 'recent'])(
+    'rejects invalid recent-calculation limit %s',
+    async (limit) => {
+      const app = createApp();
+      db.query.mockClear();
+
+      const res = await request(app).get(
+        `/api/v1/calculators/heart-score/calculations?limit=${limit}`,
+      );
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toMatchObject({
+        code: 'BAD_REQUEST',
+        message: 'Limit must be an integer from 1 to 100',
+      });
+      expect(db.query).not.toHaveBeenCalled();
+    },
+  );
 });

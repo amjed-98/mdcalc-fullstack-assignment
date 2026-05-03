@@ -49,7 +49,17 @@ export const heartScoreRepository = {
     return mapRow(row);
   },
 
-  async listRecent(_limit: number): Promise<PersistedHeartScoreCalculation[]> {
-    throw new Error('not implemented');
+  async listRecent(limit: number): Promise<PersistedHeartScoreCalculation[]> {
+    const { rows } = await pool.query<HeartScoreCalculationRow>(
+      `
+        SELECT id, inputs, score, band, interpretation, created_at
+        FROM heart_score_calculations
+        ORDER BY created_at DESC
+        LIMIT $1
+      `,
+      [limit],
+    );
+
+    return rows.map(mapRow);
   },
 };
