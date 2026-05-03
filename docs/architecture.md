@@ -32,6 +32,46 @@
   validation before submit.
 - Errors leave the API in the shape `{ error: { code, message, details? } }`.
 
-## Candidate: add your feature notes here
+## HEART Score Data Flow
 
-<!-- TODO(candidate): describe how your HEART Score feature is wired. -->
+The HEART Score implementation is centered on `@mdcalc/shared`. That package
+defines the five scored inputs with zod, exports the shared TypeScript types,
+and owns the pure `calculateHeartScore` function that maps validated inputs to
+score, risk band, interpretation, and echoed inputs. The web app imports that
+same calculator for the live preview, while the API imports the same schema and
+calculator so browser-provided results are never trusted.
+
+```
+[ HeartScoreCalculator client component ]
+       |
+       |-- live preview via @mdcalc/shared/calculateHeartScore
+       |
+       `-- POST/GET through apps/web/src/lib/api/heart-score.ts
+                         |
+                         v
+[ Express router ] --validateBody(heartScoreInputSchema)--> [ controller ]
+                         |                                      |
+                         v                                      v
+                [ heart-score.service ] -------------> calculateHeartScore
+                         |
+                         v
+              [ heart-score.repository ]
+                         |
+                         v
+        [ heart_score_calculations Postgres table ]
+```
+
+`POST /api/v1/calculators/heart-score/calculate` validates the request body at
+the router boundary and returns the shared calculation result without touching
+the database. `POST /api/v1/calculators/heart-score/calculations` follows the
+same validation path, then the service recomputes score, band, and
+interpretation before persistence. The repository inserts only server-computed
+results and maps database `created_at` rows back to the camelCase DTO used by
+the web app.
+
+Recent calculations are intentionally bounded at the HTTP layer:
+`GET /api/v1/calculators/heart-score/calculations` defaults to 20 rows and
+rejects non-integer, less-than-one, or greater-than-100 limits before repository
+access. The Next.js route keeps page metadata server-rendered, and the
+interactive form, save state, and recent-list refresh token live in the client
+HEART Score component.
